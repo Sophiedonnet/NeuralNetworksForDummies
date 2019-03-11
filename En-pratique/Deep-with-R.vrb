@@ -1,0 +1,290 @@
+\frametitle{Data definition}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#loading the keras inbuilt mnist dataset}
+\NormalTok{data <-}\StringTok{ }\KeywordTok{dataset_mnist}\NormalTok{()}
+
+\CommentTok{#separating train and test file}
+\NormalTok{train_x <-}\StringTok{ }\NormalTok{data}\OperatorTok{$}\NormalTok{train}\OperatorTok{$}\NormalTok{x}
+\NormalTok{train_y <-}\StringTok{ }\NormalTok{data}\OperatorTok{$}\NormalTok{train}\OperatorTok{$}\NormalTok{y}
+\NormalTok{test_x <-}\StringTok{ }\NormalTok{data}\OperatorTok{$}\NormalTok{test}\OperatorTok{$}\NormalTok{x}
+\NormalTok{test_y <-}\StringTok{ }\NormalTok{data}\OperatorTok{$}\NormalTok{test}\OperatorTok{$}\NormalTok{y}
+
+\KeywordTok{rm}\NormalTok{(data)}
+
+\CommentTok{# converting a 2D array into a 1D array for feeding into the MLP and normalising the matrix}
+\NormalTok{train_x <-}\StringTok{ }\KeywordTok{array}\NormalTok{(train_x, }\DataTypeTok{dim =} \KeywordTok{c}\NormalTok{(}\KeywordTok{dim}\NormalTok{(train_x)[}\DecValTok{1}\NormalTok{], }\KeywordTok{prod}\NormalTok{(}\KeywordTok{dim}\NormalTok{(train_x)[}\OperatorTok{-}\DecValTok{1}\NormalTok{]))) }\OperatorTok{/}\StringTok{ }\DecValTok{255}
+\NormalTok{test_x <-}\StringTok{ }\KeywordTok{array}\NormalTok{(test_x, }\DataTypeTok{dim =} \KeywordTok{c}\NormalTok{(}\KeywordTok{dim}\NormalTok{(test_x)[}\DecValTok{1}\NormalTok{], }\KeywordTok{prod}\NormalTok{(}\KeywordTok{dim}\NormalTok{(test_x)[}\OperatorTok{-}\DecValTok{1}\NormalTok{]))) }\OperatorTok{/}\StringTok{ }\DecValTok{255}
+
+\KeywordTok{image}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(train_x[}\DecValTok{2}\NormalTok{,],}\DecValTok{28}\NormalTok{,}\DecValTok{28}\NormalTok{,}\DataTypeTok{byrow=}\NormalTok{T), }\DataTypeTok{axes =} \OtherTok{FALSE}\NormalTok{,}\DataTypeTok{col=}\KeywordTok{gray.colors}\NormalTok{(}\DecValTok{255}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Deep-with-R_files/figure-beamer/mnist-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#converting the target variable to once hot encoded vectors using keras inbuilt function}
+\NormalTok{train_y_cat <-}\StringTok{ }\KeywordTok{to_categorical}\NormalTok{(train_y,}\DecValTok{10}\NormalTok{)}
+\NormalTok{test_y_cat <-}\StringTok{ }\KeywordTok{to_categorical}\NormalTok{(test_y,}\DecValTok{10}\NormalTok{)}
+\NormalTok{train_y <-}\StringTok{ }\NormalTok{train_y_cat}
+\NormalTok{test_y <-}\StringTok{ }\NormalTok{test_y_cat}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{block}{Construction of the neural network}
+
+\begin{itemize}
+\item
+  Dense: \texttt{layer\_dense(units\ =\ 784,\ input\_shape\ =\ 784)} :
+  The term dense refers to a layer whose units are completely connected
+  to the previous so-called input layer.
+\item
+  Dropout: \texttt{layer\_dropout(rate=0.4)} : The term ``Dropout''
+  refers to ignored units (whether hidden or visible) in a neural
+  network during the training phase. Ignored units are not considered
+  during a particular forward or backward pass. At each training stage,
+  neurons are therefore removed (or rather ignored) with probability
+  \(1-p\) be kept with probability \(p\), so that learning is done on a
+  subnet; incoming and outgoing connections to a deleted neuron are also
+  removed. Dropout is a regularization method that avoids over-learning.
+\item
+  Activation:
+  \texttt{layer\_activation(activation\ =\ \textquotesingle{}relu\textquotesingle{})}
+  There are many activation functions. The simplest and quickest to
+  calculate is the rectified linear: \(f(x) = x^+ = max(0,x)\).
+\end{itemize}
+
+\end{block}
+
+\begin{block}{In R : Initialisation}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model <-}\StringTok{ }\KeywordTok{keras_model_sequential}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+We are now defining (with Keras) of the model with 1 input layer{[}784
+neurons{]}, 1 hidden layer{[}784 neurons{]} with dropout rate 0.4 and 1
+output layer{[}10 neurons{]}, i.e number of digits from 0 to 9
+
+\end{block}
+
+\begin{block}{In R : Définition}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_dense}\NormalTok{(}\DataTypeTok{units =} \DecValTok{784}\NormalTok{, }\DataTypeTok{input_shape =} \DecValTok{784}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_dropout}\NormalTok{(}\DataTypeTok{rate =} \FloatTok{0.4}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_activation}\NormalTok{(}\DataTypeTok{activation =} \StringTok{'relu'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_dense}\NormalTok{(}\DataTypeTok{units =} \DecValTok{10}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_activation}\NormalTok{(}\DataTypeTok{activation =} \StringTok{'softmax'}\NormalTok{)}
+\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{compile}\NormalTok{(}
+\DataTypeTok{loss =} \StringTok{'categorical_crossentropy'}\NormalTok{,}
+\DataTypeTok{optimizer =} \StringTok{'adam'}\NormalTok{, }
+\DataTypeTok{metrics =} \KeywordTok{c}\NormalTok{(}\StringTok{'accuracy'}\NormalTok{)}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\end{block}
+
+\begin{block}{In R : learning}
+
+We learn the network 'estimate the parameters on the training set) with
+the following instruction :
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{learning_history <-}\StringTok{ }\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{fit}\NormalTok{(train_x, train_y, }\DataTypeTok{epochs =} \DecValTok{30}\NormalTok{, }\DataTypeTok{batch_size =} \DecValTok{1000}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\end{block}
+
+\begin{block}{In R : testing}
+
+We are now ready to test it on the testing set.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loss_and_metrics <-}\StringTok{ }\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{evaluate}\NormalTok{(test_x, test_y, }\DataTypeTok{batch_size =} \DecValTok{128}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\end{block}
+
+\begin{block}{In R : Définition}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## ___________________________________________________________________________
+## Layer (type)                     Output Shape                  Param #
+## ===========================================================================
+## dense (Dense)                    (None, 784)                   615440
+## ___________________________________________________________________________
+## dropout (Dropout)                (None, 784)                   0
+## ___________________________________________________________________________
+## activation (Activation)          (None, 784)                   0
+## ___________________________________________________________________________
+## dense_1 (Dense)                  (None, 10)                    7850
+## ___________________________________________________________________________
+## activation_1 (Activation)        (None, 10)                    0
+## ===========================================================================
+## Total params: 623,290
+## Trainable params: 623,290
+## Non-trainable params: 0
+## ___________________________________________________________________________
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(learning_history)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in plot(learning_history): objet 'learning_history' introuvable
+\end{verbatim}
+
+How to use the model to predict?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prediction <-}\StringTok{  }\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{predict}\NormalTok{(test_x) }
+\KeywordTok{image}\NormalTok{(}\KeywordTok{as.matrix}\NormalTok{(prediction[}\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{,]))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Deep-with-R_files/figure-beamer/unnamed-chunk-1-1.pdf}
+
+\end{block}
+
+\begin{block}{Example 2: Iris classification}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{data}\NormalTok{(iris)}
+\KeywordTok{ggpairs}\NormalTok{(iris, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{colour =}\NormalTok{ Species, }\DataTypeTok{alpha =} \FloatTok{0.4}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+\end{verbatim}
+
+\includegraphics{Deep-with-R_files/figure-beamer/iris-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x_iris <-}\StringTok{ }\NormalTok{iris }\OperatorTok{%>%}\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{Species) }\OperatorTok{%>%}\StringTok{  }\NormalTok{as.matrix }\OperatorTok{%>%}\StringTok{ }\NormalTok{scale  }
+\NormalTok{y_iris <-}\StringTok{ }\KeywordTok{to_categorical}\NormalTok{(}\KeywordTok{as.integer}\NormalTok{(iris}\OperatorTok{$}\NormalTok{Species)}\OperatorTok{-}\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{0}\NormalTok{)}
+\NormalTok{ntest <-}\StringTok{ }\DecValTok{15} \CommentTok{# number of test samples in each class}
+\NormalTok{test.index <-}
+\StringTok{  }\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{row_number =}\DecValTok{1}\OperatorTok{:}\KeywordTok{nrow}\NormalTok{(iris),}\DataTypeTok{Species =}\NormalTok{ iris}\OperatorTok{$}\NormalTok{Species)  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(Species) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{sample_n}\NormalTok{(ntest) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(row_number)}
+
+\NormalTok{train.index <-}\StringTok{ }\NormalTok{(}\DecValTok{1}\OperatorTok{:}\KeywordTok{nrow}\NormalTok{(iris))[}\OperatorTok{-}\NormalTok{test.index]}
+
+\NormalTok{x_iris_train <-}\StringTok{ }\NormalTok{x_iris[train.index,]}
+\NormalTok{y_iris_train <-}\StringTok{ }\NormalTok{y_iris[train.index,]}
+\NormalTok{x_iris_test <-}\StringTok{ }\NormalTok{x_iris[test.index,]}
+\NormalTok{y_iris_test <-}\StringTok{ }\NormalTok{y_iris[test.index,]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model <-}\StringTok{ }\KeywordTok{keras_model_sequential}\NormalTok{()}
+\NormalTok{model }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_dense}\NormalTok{(}\DataTypeTok{units =} \DecValTok{4}\NormalTok{, }\DataTypeTok{input_shape =} \DecValTok{4}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_dropout}\NormalTok{(}\DataTypeTok{rate=}\FloatTok{0.1}\NormalTok{)}\OperatorTok{%>%}
+\KeywordTok{layer_activation}\NormalTok{(}\DataTypeTok{activation =} \StringTok{'relu'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_dense}\NormalTok{(}\DataTypeTok{units =} \DecValTok{3}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\KeywordTok{layer_activation}\NormalTok{(}\DataTypeTok{activation =} \StringTok{'softmax'}\NormalTok{)}
+
+\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{compile}\NormalTok{(}
+\DataTypeTok{loss =} \StringTok{'categorical_crossentropy'}\NormalTok{,}
+\DataTypeTok{optimizer =} \StringTok{'adam'}\NormalTok{, }
+\DataTypeTok{metrics =} \KeywordTok{c}\NormalTok{(}\StringTok{'accuracy'}\NormalTok{)}
+\NormalTok{)}
+\NormalTok{learning_history <-}\StringTok{ }\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{fit}\NormalTok{(x_iris_train, y_iris_train, }\DataTypeTok{epochs =} \DecValTok{200}\NormalTok{, }\DataTypeTok{validation_split=}\FloatTok{0.0}\NormalTok{)}
+\NormalTok{loss_and_metrics <-}\StringTok{ }\NormalTok{model }\OperatorTok{%>%}\StringTok{ }\KeywordTok{evaluate}\NormalTok{(x_iris_test, y_iris_test)}
+
+\NormalTok{estimation <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(}\KeywordTok{predict}\NormalTok{(model,x_iris_test),}\DecValTok{1}\NormalTok{,which.max)}
+\NormalTok{truth <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(y_iris_test,}\DecValTok{1}\NormalTok{,which.max)}
+\KeywordTok{table}\NormalTok{(estimation, truth)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model_autoencoder <-}\StringTok{ }\KeywordTok{keras_model_sequential}\NormalTok{()}
+
+\NormalTok{model_autoencoder }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{layer_dense}\NormalTok{(}\DataTypeTok{units =} \DecValTok{2}\NormalTok{, }\DataTypeTok{activation =} \StringTok{'linear'}\NormalTok{,}\DataTypeTok{input_shape =} \KeywordTok{ncol}\NormalTok{(x_iris),}\DataTypeTok{name =} \StringTok{"inter_layer"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{ }\KeywordTok{layer_dense}\NormalTok{(}\DataTypeTok{units =} \DecValTok{4}\NormalTok{, }\DataTypeTok{activation =} \StringTok{'linear'}\NormalTok{) }
+
+\NormalTok{model_autoencoder }\OperatorTok{%>%}\StringTok{ }\KeywordTok{compile}\NormalTok{(}
+     \DataTypeTok{loss =} \StringTok{'mse'}\NormalTok{,}
+     \DataTypeTok{optimizer =} \StringTok{'adam'}\NormalTok{,}
+     \DataTypeTok{metrics =} \StringTok{'mse'}
+\NormalTok{ )}
+
+\NormalTok{model_autoencoder }\OperatorTok{%>%}\StringTok{ }\KeywordTok{fit}\NormalTok{(}
+\NormalTok{     x_iris_train, }
+\NormalTok{     x_iris_train, }
+     \DataTypeTok{epochs =} \DecValTok{1000}\NormalTok{, }
+  \DataTypeTok{batch_size =} \DecValTok{16}\NormalTok{,}
+  \DataTypeTok{shuffle  =} \OtherTok{TRUE}\NormalTok{,}
+    \DataTypeTok{validation_split =} \FloatTok{0.1}\NormalTok{,     }
+\NormalTok{)}
+
+\NormalTok{model_projection =}\StringTok{ }\KeywordTok{keras_model}\NormalTok{(}\DataTypeTok{inputs =}\NormalTok{ model_autoencoder}\OperatorTok{$}\NormalTok{input, }\DataTypeTok{outputs =} \KeywordTok{get_layer}\NormalTok{(model_autoencoder,}\StringTok{"inter_layer"}\NormalTok{)}\OperatorTok{$}\NormalTok{output)}
+
+\NormalTok{intermediate_output =}\StringTok{ }\KeywordTok{predict}\NormalTok{(model_projection,x_iris_train)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(FactoMineR)}
+\NormalTok{res.pca <-}\StringTok{ }\KeywordTok{PCA}\NormalTok{(x_iris_train, }\DataTypeTok{graph =} \OtherTok{FALSE}\NormalTok{)}
+
+\KeywordTok{par}\NormalTok{(}\DataTypeTok{mfrow=}\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+\KeywordTok{plot}\NormalTok{(intermediate_output[,}\DecValTok{1}\NormalTok{],intermediate_output[,}\DecValTok{2}\NormalTok{],}\DataTypeTok{col =}\NormalTok{ y_iris_train }\OperatorTok{%*%}\StringTok{ }\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{3}\NormalTok{))}
+\KeywordTok{plot}\NormalTok{(res.pca}\OperatorTok{$}\NormalTok{ind}\OperatorTok{$}\NormalTok{coord[,}\DecValTok{1}\NormalTok{],res.pca}\OperatorTok{$}\NormalTok{ind}\OperatorTok{$}\NormalTok{coord[,}\DecValTok{2}\NormalTok{], }\DataTypeTok{col =}\NormalTok{ y_iris_train }\OperatorTok{%*%}\StringTok{ }\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{3}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{save_model_hdf5}\NormalTok{(model, }\StringTok{"my_model.h5"}\NormalTok{)}
+\NormalTok{model <-}\StringTok{ }\KeywordTok{load_model_hdf5}\NormalTok{(}\StringTok{"my_model.h5"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\url{https://towardsdatascience.com/pca-vs-autoencoders-1ba08362f450}
+
+\url{https://www.datacamp.com/community/tutorials/keras-r-deep-learning}
+
+\url{https://www.analyticsvidhya.com/blog/2017/06/getting-started-with-deep-learning-using-keras-in-r/}
+
+\end{block}
+
