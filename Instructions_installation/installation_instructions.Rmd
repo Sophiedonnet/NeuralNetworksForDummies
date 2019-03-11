@@ -1,0 +1,127 @@
+---
+title: "Instructions for Installation"
+author: "Sophie Donnet"
+date: "11/03/2019"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The seminar will require a few installation before. 
+
+
+
+We will use the package `keras` developed by RStudio. `keras` is an API (Application programming interface) of high level neural networks developed in order to allow a fast experimentation.  As you will see, `keras` is really simple to use but **the tricky step is its installation**.  The installation requires a **good Internet connection** and **time**.  
+
+
+Keras is a code originally written in Python. The `keras` R package is an interface between the Keras of Python and R. Using Keras requires a tool to estimate the parameters of the Neural Networks: by default, the installation of Keras will imply the installation of the TensorFlow backend. 
+
+In general,  the problems in the installation procedure come from the fact that Rstudio has to locate your Python and then install Keras and Tensorflow. In many cases, the installation fails because of this step of location. From my experiments,  it is much more difficult to install Keras on Windows than on Linux or Mac. 
+In what follows, I propose some solutions that worked on my own computers and  the ones of my colleagues. These solutions are not elegant and obviously not optimal. Please take into account the fact that I am a statistician using Neural Networks and I have no abilities in computers. 
+
+
+
+## Installation for Linux or Mac
+
+  - You will need Python (versions from 2.7 to 3.6 or eventually 3.7). To make the things smoother, install `miniconda` (or `Anaconda`) on your machine. (https://conda.io/miniconda.html)
+  
+  - Note the installation folder of  conda (for instance on my machine it was /opt/miniconda3)
+  
+  - Now open R studio and install the R package `keras` : 
+
+from the CRAN 
+```{r download Keras, echo = TRUE, eval=FALSE}
+install.packages("keras")
+library(keras)
+```
+
+or from Github 
+```{r download Keras github, echo = TRUE, eval=FALSE}
+install.packages("devtools")
+devtools::install_github("rstudio/keras")
+library(keras)
+```
+
+
+
+At that moment, Keras is not really installed, the R-package Keras being only an interface between R and the Python Keras library. 
+
+The following commands will install Keras and, at the same time,  Tensorflow
+
+First try  : 
+
+```{r install Keras and TensorFlow v1, echo = TRUE,  eval=FALSE}
+install_keras()
+```
+Or 
+
+```{r install Keras and TensorFlow v2, echo = TRUE,  eval=FALSE}
+install_keras(method="virtualenv")
+```
+
+
+If you get an error message, maybe it is because your machine is enable to locate your Conda. In such case, try : 
+```{r install Keras and TensorFlow, echo = TRUE,  eval=FALSE}
+install_keras(method = "conda", conda = "/opt/miniconda3/bin/conda")
+```
+
+ 
+If it does not work, then maybe it is because you need pip or some Python packages. Then you will have to install them through a Terminal. For instance,  
+```{r install pip, echo = TRUE,  eval=FALSE}
+$ sudo /usr/bin/easy_install pip
+$ sudo /usr/local/bin/pip install --upgrade virtualenv
+```
+
+
+**StackOrverflow will be your best friend at that moment**. This installation step may require a few minutes. 
+
+
+
+
+After installation ,restart your R session and test your installation with the following data loading. 
+
+```{r test, echo = TRUE,  eval=FALSE}
+mnist <- dataset_mnist()
+```
+If it works (meaning no error message), then you are ready to attend the tutorial. 
+
+
+
+## Installation for Windows
+
+First try the procedure described before for Linux. If you  are lucky, it will work. But if your are not, then... either you spend 3 hours looking for a smart solution, and it would be great if you could share it with us. Or I propose the following  non-elegant  solution. 
+
+  - Install Anaconda  (https://www.anaconda.com/distribution/) : this step also takes a while. 
+  - Launch the Anaconda Navigator
+  - From the Anconda Navigator, install Rstudio (so you will have a second Rstudio on your coumputer, this is the non-elegant point) : this step also takes a while. 
+  - Launch this new Rstudio and   do 
+
+```{r install Keras windows, echo = TRUE, eval=FALSE}
+install.packages("keras")
+library(keras)
+install_keras()
+mnist <- dataset_mnist()
+```
+
+If you still have some problems localizing your Python, maybe the following command can help. 
+
+```{r install Keras windows additional, echo = TRUE, eval=FALSE}
+use_python("yourpath/Anaconda3/envs/rstudio/python.exe")
+mnist <- dataset_mnist()
+```
+
+
+
+Please let me know if it worked, and if not, please, could you share your solution?  
+
+See you later.
+
+Sophie
+
